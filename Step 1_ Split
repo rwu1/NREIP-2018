@@ -1,0 +1,82 @@
+# Flight Track Splitter
+import time
+import sys
+import os
+
+currentCraft = ''
+
+prevTrackD = 0
+prevTrack = 0
+
+count = 0
+print('Working [',end='')
+
+timeInt = 0
+file = open('adsb_v1_wallops_7_2.csv','r', encoding='utf-8')
+last = True
+with open("adsb_v1_wallops_7_2.csv", encoding='utf-8') as f:
+    for item in f:
+        break
+    for item in f:
+        items = item.split(',')
+        items[0] = items[0].replace('\ufeff', '')
+        
+        count+=1
+        if count % 1000 == 0:
+            print('.', end='')
+        
+        if items[8] is "":
+                    items[8] = '0'
+        timeStr = items[1].replace('(PST)', '-0800')
+        timeIntNew = int(time.mktime(time.strptime(timeStr, '%Y-%m-%d %H:%M:%S %z')))
+        #if (timeIntNew - timeInt) >= 3600 or (timeIntNew - timeInt) <= 0:
+        if last is True:
+            last = False
+            file.close()
+            prevTrackD = 0
+            prevTrack = 0
+            if items[8].replace('True','1').replace('False','0') is '0':
+                file = open('Tracks/'+items[1].replace(":", "")+' - '+ items[0].replace('?', '-')+'.csv', 'w', encoding='utf-8')
+            else:
+                file = open('Tracks/'+items[1].replace(":", "")+' - '+ items[0].replace('?', '-')+'.csv', 'w', encoding='utf-8')
+
+        if items[20] == items[1]:
+            last = True
+
+        skip = False
+        for i in range(5):
+            if items[i] is '':
+                print("*", end='')
+                skip = True
+        
+        if skip is False:
+            prevTrack = float(items[3])
+
+            if prevTrack >= 180.0:
+                prevTrack -= 360.0
+    
+            while prevTrack >= 90.0:
+                prevTrack -= 90.0
+            while prevTrack <= -90.0:
+                prevTrack += 90.0
+            
+            file.write(str(items[2])+','+str(prevTrack)+','+str(items[4])+','+items[8].replace('TRUE','1').replace('FALSE','0')+"\n")
+        timeInt = timeIntNew
+    file.close()
+print(']')
+print('Done!')
+
+print('Cleaning')
+for root, dirs, files in os.walk('Tracks'):
+    for d in ['RECYCLER', 'RECYCLED']:
+        if d in dirs:
+            dirs.remove(d)
+    for f in files:
+        fullname = os.path.join(root, f)
+        try:
+            if os.path.getsize(fullname) == 0:
+                print(fullname)
+                os.remove(fullname)
+        except WindowsError:
+            continue
+print('Done!')
