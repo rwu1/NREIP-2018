@@ -1,0 +1,58 @@
+# Generating Heatmap plots
+# Richard Wu
+
+import csv
+import matplotlib.pyplot as plt
+import os
+
+speed = []              # list containing speed values
+track = []              # list containing track values
+altitude = []           # list containing altitude values
+classification = []     # list containing classification of military vehicle or not; true = 1 ; false = 0
+   
+def cleanLists():
+    speed.clear()
+    track.clear()
+    altitude.clear()
+    classification.clear()
+
+def addLists():                    
+    speed.append(float(column[0]))          # add speed values into list
+    track.append(float(column[1]))          # add track values into list
+    altitude.append(float(column[2]))       # add altitude values into list
+    classification.append(int(column[3]))   # add classification values into list
+
+def plotHeatmap():
+    # Plot Speed vs Track vs Altitude on colorscale
+    x = speed
+    y = track
+    colors = altitude
+    
+    plt.figure()
+    plt.scatter(x, y, c=colors, alpha=0.5)
+    plt.axis('off')
+    
+    
+    if classification[0] == 1:
+        plt.savefig('Color/1/Graph'+str(count)+'.png')
+    else:
+        plt.savefig('Color/0/Graph'+str(count)+'.png')   
+    plt.clf()
+
+    plt.close('all')
+    
+# ====================================================================================
+
+directory = os.fsencode('Tracks')
+count = 0
+for file in os.listdir(directory):
+    filename = os.fsdecode(file)
+    if filename.endswith('.csv'):
+        count += 1
+        print(str(count))
+        cleanLists()
+        with open('Tracks/'+filename, 'r') as csvfile:         # open the dataset as a .csv file
+            plots = csv.reader(csvfile, delimiter = ",")       # read the dataset
+            for column in plots:
+                addLists()
+        plotHeatmap()
