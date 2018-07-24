@@ -1,0 +1,21 @@
+# Resizing and greyscaling images
+
+import os
+from PIL import Image
+
+def scale():
+    img = Image.open('7-2/Color/1/'+filename)
+    resized_img = img.resize((80, 60))
+    resized_img.save('7-2/Resized_Color/1/Graph'+str(count)+'.png')
+    
+#    grey_img = resized_img.convert("L")
+#    grey_img.save('7-1/Scale/0/Graph'+str(count)+'.png')
+
+directory = os.fsencode('7-2/Color/1')
+count = 0
+for file in os.listdir(directory):
+    filename = os.fsdecode(file)
+    if filename.endswith('.png'):
+        count += 1
+        print(str(count))
+        scale()
